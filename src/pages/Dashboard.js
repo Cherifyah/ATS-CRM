@@ -65,7 +65,7 @@ export default function Dashboard({ onNavigate }) {
       totalCandidats: c.length,
       enEntretien: c.filter(x => x.statut === 'En entretien').length,
       presentesClient: c.filter(x => x.statut === 'Presente client').length,
-      places: placesArr.length,
+      places: c.filter(x => x.statut === "Place").length,
       redFlags: c.filter(x => x.statut === 'Red flag').length,
       prospectsMonth: p.filter(x => x.date_contact >= firstOfMonth).length,
       rdvMonth: p.filter(x => x.resultat === 'RDV obtenu' && x.date_contact >= firstOfMonth).length,
