@@ -181,29 +181,29 @@ export default function Dashboard({ onNavigate }) {
 
       <div className="section-title">Performance — Time-to-Fill</div>
       <div className="kpi-grid">
-        <div className="kpi-card kpi-cyan">
+        <div className="kpi-card" style={{ background: '#0d9488', color: '#fff' }}>
           <div className="kpi-icon"><Clock size={24} /></div>
           <div className="kpi-label">Time-to-Fill moyen</div>
           <div className="kpi-value">{stats.timeToFill !== null ? `${stats.timeToFill}j` : '—'}</div>
-          <div className="kpi-badge">{stats.timeToFill !== null ? (stats.timeToFill <= 35 ? "Dans l'objectif" : "Au-dessus de 35j") : "Pas encore de placement"}</div>
+          <div className="kpi-badge" style={{ background: 'rgba(0,0,0,0.18)', color: '#fff' }}>{stats.timeToFill !== null ? (stats.timeToFill <= 35 ? "Dans l'objectif" : "Au-dessus de 35j") : "Pas encore de placement"}</div>
         </div>
-        <div className="kpi-card kpi-slate">
+        <div className="kpi-card" style={{ background: '#d97706', color: '#fff' }}>
           <div className="kpi-icon"><TrendingUp size={24} /></div>
           <div className="kpi-label">Objectif Time-to-Fill</div>
           <div className="kpi-value">35j</div>
-          <div className="kpi-badge">Benchmark marché mid-market</div>
+          <div className="kpi-badge" style={{ background: 'rgba(0,0,0,0.18)', color: '#fff' }}>Benchmark marché mid-market</div>
         </div>
-        <div className="kpi-card kpi-pink">
+        <div className="kpi-card" style={{ background: '#7c3aed', color: '#fff' }}>
           <div className="kpi-icon"><TrendingUp size={24} /></div>
           <div className="kpi-label">Taux de conversion</div>
           <div className="kpi-value">{stats.presentesClient > 0 ? Math.round(stats.places / stats.presentesClient * 100) + "%" : "—"}</div>
-          <div className="kpi-badge">Présentés → Placés</div>
+          <div className="kpi-badge" style={{ background: 'rgba(0,0,0,0.18)', color: '#fff' }}>Présentés → Placés</div>
         </div>
-        <div className="kpi-card" style={{ background: '#7c3aed' }}>
+        <div className="kpi-card" style={{ background: '#be123c', color: '#fff' }}>
           <div className="kpi-icon"><Flag size={24} /></div>
           <div className="kpi-label">Red flags</div>
           <div className="kpi-value">{stats.redFlags}</div>
-          <div className="kpi-badge">Profils à ne pas représenter</div>
+          <div className="kpi-badge" style={{ background: 'rgba(0,0,0,0.18)', color: '#fff' }}>Profils à ne pas représenter</div>
         </div>
       </div>
     </div>
