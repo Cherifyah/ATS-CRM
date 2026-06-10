@@ -46,7 +46,13 @@ export default function Dashboard({ onNavigate }) {
       return d >= monday && d <= sunday
     }).length
 
-    const placesArr = a.filter(x => x.type_archivage === 'Place')
+    // Placés = type_archivage contient 'Place' ou 'Placé' (les deux variantes possibles en base)
+    const placesArr = a.filter(x =>
+      x.type_archivage && (
+        x.type_archivage.toLowerCase().includes('place') ||
+        x.type_archivage.toLowerCase().includes('placé')
+      )
+    )
     const timesToFill = placesArr
       .filter(x => x.date_archivage && x.created_at)
       .map(x => Math.round((new Date(x.date_archivage) - new Date(x.created_at)) / (1000 * 60 * 60 * 24)))
@@ -59,7 +65,7 @@ export default function Dashboard({ onNavigate }) {
       totalCandidats: c.length,
       enEntretien: c.filter(x => x.statut === 'En entretien').length,
       presentesClient: c.filter(x => x.statut === 'Presente client').length,
-      places: a.filter(x => x.type_archivage === 'Place').length,
+      places: placesArr.length,
       redFlags: c.filter(x => x.statut === 'Red flag').length,
       prospectsMonth: p.filter(x => x.date_contact >= firstOfMonth).length,
       rdvMonth: p.filter(x => x.resultat === 'RDV obtenu' && x.date_contact >= firstOfMonth).length,
@@ -78,15 +84,13 @@ export default function Dashboard({ onNavigate }) {
   const pctEntretiens = Math.round((stats.entretiensWeek / objectif) * 100)
   const pctPush = Math.round((stats.totalPushCV / 150) * 100)
 
-  // Haut (Candidats) : violet, bleu, orange, vert — pas de doublon autorise en bas
   const kpiCandidats = [
     { label: 'Total candidats', value: stats.totalCandidats, cls: 'kpi-purple', icon: <Users size={24} /> },
     { label: 'En entretien', value: stats.enEntretien, cls: 'kpi-blue', icon: <Calendar size={24} /> },
-    { label: 'Presentes client', value: stats.presentesClient, cls: 'kpi-orange', icon: <Briefcase size={24} /> },
-    { label: 'Places (total)', value: stats.places, cls: 'kpi-green', icon: <Trophy size={24} /> },
+    { label: 'Présentés client', value: stats.presentesClient, cls: 'kpi-orange', icon: <Briefcase size={24} /> },
+    { label: 'Placés (total)', value: stats.places, cls: 'kpi-green', icon: <Trophy size={24} /> },
   ]
 
-  // Bas (Prospection) : rose, cyan, gris ardoise, rouge — aucun doublon
   const kpiProsp = [
     { label: 'Prospects ce mois', value: stats.prospectsMonth, cls: 'kpi-pink', icon: <Phone size={24} />, badge: 'Objectif : 60' },
     { label: 'RDV obtenus ce mois', value: stats.rdvMonth, cls: 'kpi-cyan', icon: <Calendar size={24} />, badge: `Taux : ${stats.prospectsMonth > 0 ? Math.round(stats.rdvMonth / Math.max(stats.prospectsMonth,1) * 100) : 0}%` },
@@ -163,7 +167,7 @@ export default function Dashboard({ onNavigate }) {
           </div>
         </div>
         <div className="push-cv-card" style={{ background: '#f0f9ff', border: '1px solid #7dd3fc' }}>
-          <div className="push-cv-label" style={{ color: '#0c4a6e' }}>Controles de reference</div>
+          <div className="push-cv-label" style={{ color: '#0c4a6e' }}>Contrôles de référence</div>
           <div className="push-cv-value" style={{ color: '#0284c7' }}>{stats.controles}</div>
           <div style={{ fontSize: 11, color: '#0c4a6e' }}>ce mois</div>
         </div>
@@ -175,19 +179,19 @@ export default function Dashboard({ onNavigate }) {
           <div className="kpi-icon"><Clock size={24} /></div>
           <div className="kpi-label">Time-to-Fill moyen</div>
           <div className="kpi-value">{stats.timeToFill !== null ? `${stats.timeToFill}j` : '—'}</div>
-          <div className="kpi-badge">{stats.timeToFill !== null ? (stats.timeToFill <= 35 ? 'Dans l objectif' : 'Au-dessus de 35j') : 'Pas encore de placement'}</div>
+          <div className="kpi-badge">{stats.timeToFill !== null ? (stats.timeToFill <= 35 ? 'Dans l\'objectif' : 'Au-dessus de 35j') : 'Pas encore de placement'}</div>
         </div>
         <div className="kpi-card" style={{ background: 'linear-gradient(135deg, #0891b2, #0284c7)', minHeight: 120 }}>
           <div className="kpi-icon"><TrendingUp size={24} /></div>
           <div className="kpi-label">Objectif Time-to-Fill</div>
           <div className="kpi-value">35j</div>
-          <div className="kpi-badge">Benchmark marche mid-market</div>
+          <div className="kpi-badge">Benchmark marché mid-market</div>
         </div>
         <div className="kpi-card" style={{ background: 'linear-gradient(135deg, #059669, #10b981)', minHeight: 120 }}>
           <div className="kpi-icon"><Trophy size={24} /></div>
-          <div className="kpi-label">Placements reussis</div>
+          <div className="kpi-label">Placements réussis</div>
           <div className="kpi-value">{stats.places}</div>
-          <div className="kpi-badge">Total depuis le debut</div>
+          <div className="kpi-badge">Total depuis le début</div>
         </div>
       </div>
     </div>
