@@ -181,25 +181,25 @@ export default function Dashboard({ onNavigate }) {
 
       <div className="section-title">Performance — Time-to-Fill</div>
       <div className="kpi-grid">
-        <div className="kpi-card kpi-purple">
+        <div className="kpi-card kpi-cyan">
           <div className="kpi-icon"><Clock size={24} /></div>
           <div className="kpi-label">Time-to-Fill moyen</div>
           <div className="kpi-value">{stats.timeToFill !== null ? `${stats.timeToFill}j` : '—'}</div>
           <div className="kpi-badge">{stats.timeToFill !== null ? (stats.timeToFill <= 35 ? "Dans l'objectif" : "Au-dessus de 35j") : "Pas encore de placement"}</div>
         </div>
-        <div className="kpi-card kpi-blue">
+        <div className="kpi-card kpi-slate">
           <div className="kpi-icon"><TrendingUp size={24} /></div>
           <div className="kpi-label">Objectif Time-to-Fill</div>
           <div className="kpi-value">35j</div>
           <div className="kpi-badge">Benchmark marché mid-market</div>
         </div>
-        <div className="kpi-card kpi-green">
+        <div className="kpi-card kpi-pink">
           <div className="kpi-icon"><TrendingUp size={24} /></div>
           <div className="kpi-label">Taux de conversion</div>
           <div className="kpi-value">{stats.presentesClient > 0 ? Math.round(stats.places / stats.presentesClient * 100) + "%" : "—"}</div>
           <div className="kpi-badge">Présentés → Placés</div>
         </div>
-        <div className="kpi-card kpi-red">
+        <div className="kpi-card" style={{ background: '#7c3aed' }}>
           <div className="kpi-icon"><Flag size={24} /></div>
           <div className="kpi-label">Red flags</div>
           <div className="kpi-value">{stats.redFlags}</div>
