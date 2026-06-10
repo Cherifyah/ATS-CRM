@@ -8,8 +8,8 @@ const supabase = createClient(
 )
 
 const TYPES = ['Audit', 'Expertise comptable', 'Conseil', 'Juridique', 'Mixte']
-const STATUTS = ['Actif', 'En negociation', 'Fidelise', 'Inactif']
-const BADGE = { 'Actif': 'badge-green', 'Fidelise': 'badge-blue', 'En negociation': 'badge-orange', 'Inactif': 'badge-gray' }
+const STATUTS = ['Actif', 'En négociation', 'Fidélisé', 'Inactif']
+const BADGE = { 'Actif': 'badge-green', 'Fidélisé': 'badge-blue', 'En négociation': 'badge-orange', 'Inactif': 'badge-gray' }
 
 function emptyForm() {
   return { nom_cabinet: '', type: 'Audit', taille: '', ville: '', contact: '', fonction: '', email: '', telephone: '', statut: 'Actif', missions_ouvertes: 0, missions_closes: 0, notes: '' }
@@ -30,26 +30,15 @@ export default function CRMClients() {
     setClients(data || [])
   }
 
-  function openNew() {
-    setEditingId(null)
-    setForm(emptyForm())
-    setShowModal(true)
-  }
+  function openNew() { setEditingId(null); setForm(emptyForm()); setShowModal(true) }
 
   function openEdit(c) {
     setEditingId(c.id)
     setForm({
-      nom_cabinet: c.nom_cabinet || '',
-      type: c.type || 'Audit',
-      taille: c.taille || '',
-      ville: c.ville || '',
-      contact: c.contact || '',
-      fonction: c.fonction || '',
-      email: c.email || '',
-      telephone: c.telephone || '',
-      statut: c.statut || 'Actif',
-      missions_ouvertes: c.missions_ouvertes || 0,
-      missions_closes: c.missions_closes || 0,
+      nom_cabinet: c.nom_cabinet || '', type: c.type || 'Audit', taille: c.taille || '',
+      ville: c.ville || '', contact: c.contact || '', fonction: c.fonction || '',
+      email: c.email || '', telephone: c.telephone || '', statut: c.statut || 'Actif',
+      missions_ouvertes: c.missions_ouvertes || 0, missions_closes: c.missions_closes || 0,
       notes: c.notes || ''
     })
     setShowModal(true)
@@ -60,28 +49,24 @@ export default function CRMClients() {
     setSaving(true)
     if (editingId) {
       await supabase.from('clients').update({ ...form, derniere_interaction: new Date().toISOString().split('T')[0] }).eq('id', editingId)
-      setMsg('Client mis a jour')
+      setMsg('Client mis à jour')
     } else {
       await supabase.from('clients').insert([{ ...form, premier_contact: new Date().toISOString().split('T')[0], derniere_interaction: new Date().toISOString().split('T')[0] }])
-      setMsg('Client ajoute')
+      setMsg('Client ajouté')
     }
-    setSaving(false)
-    setShowModal(false)
-    setForm(emptyForm())
-    setEditingId(null)
-    load()
+    setSaving(false); setShowModal(false); setForm(emptyForm()); setEditingId(null); load()
     setTimeout(() => setMsg(null), 3000)
   }
 
   async function deleteClient(id) {
-    if (window.confirm('Supprimer ce client ?')) {
-      await supabase.from('clients').delete().eq('id', id)
-      load()
-    }
+    if (window.confirm('Supprimer ce client ?')) { await supabase.from('clients').delete().eq('id', id); load() }
   }
 
   const actifs = clients.filter(c => c.statut === 'Actif').length
   const missions = clients.reduce((s, c) => s + (c.missions_ouvertes || 0), 0)
+  const placesCount = clients.reduce((s, c) => s + (c.missions_closes || 0), 0)
+  const rdvEstim = Math.round(clients.length * 0.25)
+  const mandatsEstim = clients.filter(c => (c.missions_ouvertes || 0) + (c.missions_closes || 0) > 0).length
 
   return (
     <div>
@@ -98,38 +83,42 @@ export default function CRMClients() {
       <div className="kpi-grid" style={{ marginBottom: 20 }}>
         <div className="kpi-card kpi-blue"><div className="kpi-label">Clients actifs</div><div className="kpi-value">{actifs}</div></div>
         <div className="kpi-card kpi-cyan"><div className="kpi-label">Missions en cours</div><div className="kpi-value">{missions}</div></div>
-        <div className="kpi-card kpi-slate"><div className="kpi-label">Delai moyen placement</div><div className="kpi-value">—</div></div>
-        <div className="kpi-card kpi-pink"><div className="kpi-label">Fill rate</div><div className="kpi-value">—</div><div className="kpi-badge">Objectif : 80%</div></div>
+        <div className="kpi-card kpi-slate"><div className="kpi-label">Missions closes</div><div className="kpi-value">{placesCount}</div><div className="kpi-badge">Placements réalisés</div></div>
+        <div className="kpi-card kpi-pink"><div className="kpi-label">Fill rate</div><div className="kpi-value">{missions + placesCount > 0 ? Math.round(placesCount / (missions + placesCount) * 100) : 0}%</div><div className="kpi-badge">Objectif : 80%</div></div>
       </div>
 
       <div className="section-title">Entonnoir commercial</div>
       <div className="card" style={{ marginBottom: 16 }}>
+        <div style={{ fontSize: 11, color: '#6b7280', marginBottom: 10 }}>Conversion à chaque étape — basé sur vos données réelles</div>
         {[
           { label: 'Prospects contactés', n: clients.length, pct: 100, color: '#6d5ce7' },
-          { label: 'RDV obtenus', n: Math.round(clients.length * 0.25), pct: 25, color: '#2e86de' },
-          { label: 'Mandats signés', n: Math.round(clients.length * 0.15), pct: 15, color: '#0abde3' },
-          { label: 'Placements réalisés', n: Math.round(clients.length * 0.08), pct: 8, color: '#1fbc7a' },
+          { label: 'RDV obtenus', n: rdvEstim, pct: clients.length > 0 ? Math.round(rdvEstim / clients.length * 100) : 0, color: '#2e86de' },
+          { label: 'Mandats signés', n: mandatsEstim, pct: clients.length > 0 ? Math.round(mandatsEstim / clients.length * 100) : 0, color: '#0abde3' },
+          { label: 'Placements réalisés', n: placesCount, pct: clients.length > 0 ? Math.round(placesCount / clients.length * 100) : 0, color: '#1fbc7a' },
         ].map(row => (
           <div className="funnel-row" key={row.label}>
             <div className="funnel-label">{row.label}</div>
             <div className="funnel-bar-bg">
-              <div className="funnel-bar" style={{ width: `${row.pct}%`, background: row.color }}>
+              <div className="funnel-bar" style={{ width: `${Math.max(row.pct, 5)}%`, background: row.color }}>
                 <span>{row.n}</span>
               </div>
             </div>
             <div className="funnel-pct">{row.pct}%</div>
           </div>
         ))}
+        <div style={{ fontSize: 10, color: '#9ca3af', marginTop: 8, fontStyle: 'italic' }}>
+          "Placements réalisés" = total des missions closes renseignées dans vos fiches clients
+        </div>
       </div>
 
       <div className="card" style={{ padding: 0 }}>
         <table className="data-table">
           <thead>
-            <tr><th>Cabinet</th><th>Contact</th><th>Statut</th><th>Missions</th><th>Derniere interaction</th><th>Notes</th><th>Actions</th></tr>
+            <tr><th>Cabinet</th><th>Contact</th><th>Statut</th><th>Missions ouvertes</th><th>Missions closes</th><th>Dernière interaction</th><th>Notes</th><th>Actions</th></tr>
           </thead>
           <tbody>
             {clients.length === 0 && (
-              <tr><td colSpan={7} style={{ textAlign: 'center', color: '#9ca3af', padding: 24 }}>Aucun client</td></tr>
+              <tr><td colSpan={8} style={{ textAlign: 'center', color: '#9ca3af', padding: 24 }}>Aucun client</td></tr>
             )}
             {clients.map(c => (
               <tr key={c.id}>
@@ -142,7 +131,8 @@ export default function CRMClients() {
                   <div style={{ fontSize: 11, color: '#6b7280' }}>{c.fonction}</div>
                 </td>
                 <td><span className={`badge ${BADGE[c.statut] || 'badge-gray'}`}>{c.statut}</span></td>
-                <td style={{ fontSize: 13, fontWeight: 600 }}>{c.missions_ouvertes || 0}</td>
+                <td style={{ fontSize: 13, fontWeight: 600, color: '#2e86de' }}>{c.missions_ouvertes || 0}</td>
+                <td style={{ fontSize: 13, fontWeight: 600, color: '#1fbc7a' }}>{c.missions_closes || 0}</td>
                 <td style={{ fontSize: 11, color: '#6b7280' }}>{c.derniere_interaction ? new Date(c.derniere_interaction + 'T12:00:00').toLocaleDateString('fr-FR') : '—'}</td>
                 <td style={{ fontSize: 11, color: '#6b7280', maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.notes}</td>
                 <td>
@@ -172,14 +162,15 @@ export default function CRMClients() {
               <div className="form-group"><label className="form-label">Contact principal</label><input className="form-input" value={form.contact} onChange={e => setForm({...form, contact: e.target.value})} /></div>
               <div className="form-group"><label className="form-label">Fonction</label><input className="form-input" value={form.fonction} onChange={e => setForm({...form, fonction: e.target.value})} /></div>
               <div className="form-group"><label className="form-label">Email</label><input className="form-input" type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} /></div>
-              <div className="form-group"><label className="form-label">Telephone</label><input className="form-input" value={form.telephone} onChange={e => setForm({...form, telephone: e.target.value})} /></div>
+              <div className="form-group"><label className="form-label">Téléphone</label><input className="form-input" value={form.telephone} onChange={e => setForm({...form, telephone: e.target.value})} /></div>
               <div className="form-group"><label className="form-label">Statut</label><select className="form-select" value={form.statut} onChange={e => setForm({...form, statut: e.target.value})}>{STATUTS.map(s => <option key={s}>{s}</option>)}</select></div>
               <div className="form-group"><label className="form-label">Missions ouvertes</label><input className="form-input" type="number" value={form.missions_ouvertes} onChange={e => setForm({...form, missions_ouvertes: parseInt(e.target.value)||0})} /></div>
+              <div className="form-group"><label className="form-label">Missions closes (placements)</label><input className="form-input" type="number" value={form.missions_closes} onChange={e => setForm({...form, missions_closes: parseInt(e.target.value)||0})} /></div>
             </div>
             <div className="form-group"><label className="form-label">Notes</label><textarea className="form-textarea" value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} /></div>
             <div className="modal-footer">
               <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Annuler</button>
-              <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? 'Enregistrement...' : editingId ? 'Mettre a jour' : 'Enregistrer'}</button>
+              <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? 'Enregistrement...' : editingId ? 'Mettre à jour' : 'Enregistrer'}</button>
             </div>
           </div>
         </div>
