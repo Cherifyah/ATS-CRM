@@ -194,10 +194,10 @@ export default function Dashboard({ onNavigate }) {
           <div className="kpi-badge">Benchmark marché mid-market</div>
         </div>
         <div className="kpi-card kpi-green">
-          <div className="kpi-icon"><Trophy size={24} /></div>
-          <div className="kpi-label">Placements réussis</div>
-          <div className="kpi-value">{stats.places}</div>
-          <div className="kpi-badge">Total depuis le début</div>
+          <div className="kpi-icon"><TrendingUp size={24} /></div>
+          <div className="kpi-label">Taux de conversion</div>
+          <div className="kpi-value">{stats.presentesClient > 0 ? Math.round(stats.places / stats.presentesClient * 100) + "%" : "—"}</div>
+          <div className="kpi-badge">Présentés → Placés</div>
         </div>
         <div className="kpi-card kpi-red">
           <div className="kpi-icon"><Flag size={24} /></div>
