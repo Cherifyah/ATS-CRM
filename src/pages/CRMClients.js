@@ -105,10 +105,10 @@ export default function CRMClients() {
       <div className="section-title">Entonnoir commercial</div>
       <div className="card" style={{ marginBottom: 16 }}>
         {[
-          { label: 'Prospects contactes', n: clients.length, pct: 100, color: '#6d5ce7' },
+          { label: 'Prospects contactés', n: clients.length, pct: 100, color: '#6d5ce7' },
           { label: 'RDV obtenus', n: Math.round(clients.length * 0.25), pct: 25, color: '#2e86de' },
-          { label: 'Mandats signes', n: Math.round(clients.length * 0.15), pct: 15, color: '#0abde3' },
-          { label: 'Placements realises', n: Math.round(clients.length * 0.08), pct: 8, color: '#1fbc7a' },
+          { label: 'Mandats signés', n: Math.round(clients.length * 0.15), pct: 15, color: '#0abde3' },
+          { label: 'Placements réalisés', n: Math.round(clients.length * 0.08), pct: 8, color: '#1fbc7a' },
         ].map(row => (
           <div className="funnel-row" key={row.label}>
             <div className="funnel-label">{row.label}</div>
