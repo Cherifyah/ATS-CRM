@@ -129,28 +129,28 @@ export default function Dashboard({ onNavigate }) {
 
       <div className="section-title">Push CV — semaine en cours</div>
       <div className="push-cv-grid">
-        <div className="push-cv-card">
-          <div className="push-cv-label">Adchases</div>
-          <div className="push-cv-value" style={{ color: '#2e86de' }}>{stats.adchases}</div>
-          <div style={{ fontSize: 11, color: '#6b7280' }}>cette semaine</div>
+        <div className="push-cv-card" style={{ background: '#fff0f6', border: '1px solid #ffb3d1' }}>
+          <div className="push-cv-label" style={{ color: '#9d174d' }}>Adchases</div>
+          <div className="push-cv-value" style={{ color: '#db2777' }}>{stats.adchases}</div>
+          <div style={{ fontSize: 11, color: '#9d174d' }}>cette semaine</div>
         </div>
-        <div className="push-cv-card">
-          <div className="push-cv-label">Placement actif</div>
-          <div className="push-cv-value" style={{ color: '#1fbc7a' }}>{stats.placementActif}</div>
-          <div style={{ fontSize: 11, color: '#6b7280' }}>cette semaine</div>
+        <div className="push-cv-card" style={{ background: '#f0fdf4', border: '1px solid #86efac' }}>
+          <div className="push-cv-label" style={{ color: '#166534' }}>Placement actif</div>
+          <div className="push-cv-value" style={{ color: '#16a34a' }}>{stats.placementActif}</div>
+          <div style={{ fontSize: 11, color: '#166534' }}>cette semaine</div>
         </div>
-        <div className="push-cv-card" style={{ background: '#ede9fd', border: '1px solid #c4b5fd' }}>
-          <div className="push-cv-label">Total push CV</div>
-          <div className="push-cv-value" style={{ color: '#6d5ce7' }}>{stats.totalPushCV}</div>
-          <div style={{ fontSize: 11, color: '#6d5ce7' }}>{pctPush}% de l'objectif 150</div>
+        <div className="push-cv-card" style={{ background: '#fff7ed', border: '1px solid #fdba74' }}>
+          <div className="push-cv-label" style={{ color: '#9a3412' }}>Total push CV</div>
+          <div className="push-cv-value" style={{ color: '#ea580c' }}>{stats.totalPushCV}</div>
+          <div style={{ fontSize: 11, color: '#9a3412' }}>{pctPush}% de l'objectif 150</div>
           <div className="progress-bar" style={{ marginTop: 8 }}>
-            <div className="progress-fill" style={{ width: `${Math.min(100, pctPush)}%`, background: '#6d5ce7' }} />
+            <div className="progress-fill" style={{ width: `${Math.min(100, pctPush)}%`, background: '#ea580c' }} />
           </div>
         </div>
-        <div className="push-cv-card" style={{ background: '#fef3c7', border: '1px solid #fde68a' }}>
-          <div className="push-cv-label">Contrôles de référence</div>
-          <div className="push-cv-value" style={{ color: '#f5a623' }}>{stats.controles}</div>
-          <div style={{ fontSize: 11, color: '#92400e' }}>ce mois — indicateur indépendant</div>
+        <div className="push-cv-card" style={{ background: '#f0f9ff', border: '1px solid #7dd3fc' }}>
+          <div className="push-cv-label" style={{ color: '#0c4a6e' }}>Contrôles de référence</div>
+          <div className="push-cv-value" style={{ color: '#0284c7' }}>{stats.controles}</div>
+          <div style={{ fontSize: 11, color: '#0c4a6e' }}>ce mois — indicateur indépendant</div>
         </div>
       </div>
     </div>
