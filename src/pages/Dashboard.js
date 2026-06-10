@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
-import { Phone, Calendar, TrendingUp, Trophy, Users, Briefcase, Building, Target, Check, Clock } from 'lucide-react'
+import { Phone, Calendar, TrendingUp, Trophy, Users, Briefcase, Building, Target, Check, Clock, Flag } from 'lucide-react'
 
 const supabase = createClient(
   'https://nlvffxqewztfpuvzqeih.supabase.co',
@@ -46,13 +46,7 @@ export default function Dashboard({ onNavigate }) {
       return d >= monday && d <= sunday
     }).length
 
-    // Placés = type_archivage contient 'Place' ou 'Placé' (les deux variantes possibles en base)
-    const placesArr = a.filter(x =>
-      x.type_archivage && (
-        x.type_archivage.toLowerCase().includes('place') ||
-        x.type_archivage.toLowerCase().includes('placé')
-      )
-    )
+    const placesArr = a.filter(x => x.type_archivage && x.type_archivage.toLowerCase().includes('plac'))
     const timesToFill = placesArr
       .filter(x => x.date_archivage && x.created_at)
       .map(x => Math.round((new Date(x.date_archivage) - new Date(x.created_at)) / (1000 * 60 * 60 * 24)))
@@ -65,7 +59,7 @@ export default function Dashboard({ onNavigate }) {
       totalCandidats: c.length,
       enEntretien: c.filter(x => x.statut === 'En entretien').length,
       presentesClient: c.filter(x => x.statut === 'Presente client').length,
-      places: c.filter(x => x.statut === "Place").length,
+      places: c.filter(x => x.statut === 'Place').length,
       redFlags: c.filter(x => x.statut === 'Red flag').length,
       prospectsMonth: p.filter(x => x.date_contact >= firstOfMonth).length,
       rdvMonth: p.filter(x => x.resultat === 'RDV obtenu' && x.date_contact >= firstOfMonth).length,
@@ -84,20 +78,6 @@ export default function Dashboard({ onNavigate }) {
   const pctEntretiens = Math.round((stats.entretiensWeek / objectif) * 100)
   const pctPush = Math.round((stats.totalPushCV / 150) * 100)
 
-  const kpiCandidats = [
-    { label: 'Total candidats', value: stats.totalCandidats, cls: 'kpi-purple', icon: <Users size={24} /> },
-    { label: 'En entretien', value: stats.enEntretien, cls: 'kpi-blue', icon: <Calendar size={24} /> },
-    { label: 'Présentés client', value: stats.presentesClient, cls: 'kpi-orange', icon: <Briefcase size={24} /> },
-    { label: 'Placés (total)', value: stats.places, cls: 'kpi-green', icon: <Trophy size={24} /> },
-  ]
-
-  const kpiProsp = [
-    { label: 'Prospects ce mois', value: stats.prospectsMonth, cls: 'kpi-pink', icon: <Phone size={24} />, badge: 'Objectif : 60' },
-    { label: 'RDV obtenus ce mois', value: stats.rdvMonth, cls: 'kpi-cyan', icon: <Calendar size={24} />, badge: `Taux : ${stats.prospectsMonth > 0 ? Math.round(stats.rdvMonth / Math.max(stats.prospectsMonth,1) * 100) : 0}%` },
-    { label: 'Clients actifs', value: stats.clientsActifs, cls: 'kpi-slate', icon: <Building size={24} /> },
-    { label: 'Missions ouvertes', value: stats.missionsOuvertes, cls: 'kpi-red', icon: <Target size={24} /> },
-  ]
-
   return (
     <div>
       <div className="page-header">
@@ -107,14 +87,26 @@ export default function Dashboard({ onNavigate }) {
 
       <div className="section-title">Candidats — Pipeline</div>
       <div className="kpi-grid">
-        {kpiCandidats.map(k => (
-          <div className={`kpi-card ${k.cls}`} key={k.label}>
-            <div className="kpi-icon">{k.icon}</div>
-            <div className="kpi-label">{k.label}</div>
-            <div className="kpi-value">{k.value}</div>
-            {k.badge && <div className="kpi-badge">{k.badge}</div>}
-          </div>
-        ))}
+        <div className="kpi-card kpi-purple">
+          <div className="kpi-icon"><Users size={24} /></div>
+          <div className="kpi-label">Total candidats</div>
+          <div className="kpi-value">{stats.totalCandidats}</div>
+        </div>
+        <div className="kpi-card kpi-blue">
+          <div className="kpi-icon"><Calendar size={24} /></div>
+          <div className="kpi-label">En entretien</div>
+          <div className="kpi-value">{stats.enEntretien}</div>
+        </div>
+        <div className="kpi-card kpi-orange">
+          <div className="kpi-icon"><Briefcase size={24} /></div>
+          <div className="kpi-label">Présentés client</div>
+          <div className="kpi-value">{stats.presentesClient}</div>
+        </div>
+        <div className="kpi-card kpi-green">
+          <div className="kpi-icon"><Trophy size={24} /></div>
+          <div className="kpi-label">Placés (total)</div>
+          <div className="kpi-value">{stats.places}</div>
+        </div>
       </div>
 
       <div className="tracker">
@@ -136,14 +128,28 @@ export default function Dashboard({ onNavigate }) {
 
       <div className="section-title">Prospection commerciale</div>
       <div className="kpi-grid">
-        {kpiProsp.map(k => (
-          <div className={`kpi-card ${k.cls}`} key={k.label}>
-            <div className="kpi-icon">{k.icon}</div>
-            <div className="kpi-label">{k.label}</div>
-            <div className="kpi-value">{k.value}</div>
-            {k.badge && <div className="kpi-badge">{k.badge}</div>}
-          </div>
-        ))}
+        <div className="kpi-card kpi-pink">
+          <div className="kpi-icon"><Phone size={24} /></div>
+          <div className="kpi-label">Prospects ce mois</div>
+          <div className="kpi-value">{stats.prospectsMonth}</div>
+          <div className="kpi-badge">Objectif : 60</div>
+        </div>
+        <div className="kpi-card kpi-cyan">
+          <div className="kpi-icon"><Calendar size={24} /></div>
+          <div className="kpi-label">RDV obtenus ce mois</div>
+          <div className="kpi-value">{stats.rdvMonth}</div>
+          <div className="kpi-badge">Taux : {stats.prospectsMonth > 0 ? Math.round(stats.rdvMonth / stats.prospectsMonth * 100) : 0}%</div>
+        </div>
+        <div className="kpi-card kpi-slate">
+          <div className="kpi-icon"><Building size={24} /></div>
+          <div className="kpi-label">Clients actifs</div>
+          <div className="kpi-value">{stats.clientsActifs}</div>
+        </div>
+        <div className="kpi-card kpi-red">
+          <div className="kpi-icon"><Target size={24} /></div>
+          <div className="kpi-label">Missions ouvertes</div>
+          <div className="kpi-value">{stats.missionsOuvertes}</div>
+        </div>
       </div>
 
       <div className="section-title">Push CV — semaine en cours</div>
@@ -174,24 +180,30 @@ export default function Dashboard({ onNavigate }) {
       </div>
 
       <div className="section-title">Performance — Time-to-Fill</div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
-        <div className="kpi-card" className='kpi-purple' style={{ minHeight: 110 }}>
+      <div className="kpi-grid">
+        <div className="kpi-card kpi-purple">
           <div className="kpi-icon"><Clock size={24} /></div>
           <div className="kpi-label">Time-to-Fill moyen</div>
           <div className="kpi-value">{stats.timeToFill !== null ? `${stats.timeToFill}j` : '—'}</div>
-          <div className="kpi-badge">{stats.timeToFill !== null ? (stats.timeToFill <= 35 ? 'Dans l\'objectif' : 'Au-dessus de 35j') : 'Pas encore de placement'}</div>
+          <div className="kpi-badge">{stats.timeToFill !== null ? (stats.timeToFill <= 35 ? "Dans l'objectif" : "Au-dessus de 35j") : "Pas encore de placement"}</div>
         </div>
-        <div className="kpi-card" className='kpi-blue' style={{ minHeight: 110 }}>
+        <div className="kpi-card kpi-blue">
           <div className="kpi-icon"><TrendingUp size={24} /></div>
           <div className="kpi-label">Objectif Time-to-Fill</div>
           <div className="kpi-value">35j</div>
           <div className="kpi-badge">Benchmark marché mid-market</div>
         </div>
-        <div className="kpi-card" className='kpi-green' style={{ minHeight: 110 }}>
+        <div className="kpi-card kpi-green">
           <div className="kpi-icon"><Trophy size={24} /></div>
           <div className="kpi-label">Placements réussis</div>
           <div className="kpi-value">{stats.places}</div>
           <div className="kpi-badge">Total depuis le début</div>
+        </div>
+        <div className="kpi-card kpi-red">
+          <div className="kpi-icon"><Flag size={24} /></div>
+          <div className="kpi-label">Red flags</div>
+          <div className="kpi-value">{stats.redFlags}</div>
+          <div className="kpi-badge">Profils à ne pas représenter</div>
         </div>
       </div>
     </div>
