@@ -174,20 +174,20 @@ export default function Dashboard({ onNavigate }) {
       </div>
 
       <div className="section-title">Performance — Time-to-Fill</div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
-        <div className="kpi-card" style={{ background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', minHeight: 120 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
+        <div className="kpi-card" className='kpi-purple' style={{ minHeight: 110 }}>
           <div className="kpi-icon"><Clock size={24} /></div>
           <div className="kpi-label">Time-to-Fill moyen</div>
           <div className="kpi-value">{stats.timeToFill !== null ? `${stats.timeToFill}j` : '—'}</div>
           <div className="kpi-badge">{stats.timeToFill !== null ? (stats.timeToFill <= 35 ? 'Dans l\'objectif' : 'Au-dessus de 35j') : 'Pas encore de placement'}</div>
         </div>
-        <div className="kpi-card" style={{ background: 'linear-gradient(135deg, #0891b2, #0284c7)', minHeight: 120 }}>
+        <div className="kpi-card" className='kpi-blue' style={{ minHeight: 110 }}>
           <div className="kpi-icon"><TrendingUp size={24} /></div>
           <div className="kpi-label">Objectif Time-to-Fill</div>
           <div className="kpi-value">35j</div>
           <div className="kpi-badge">Benchmark marché mid-market</div>
         </div>
-        <div className="kpi-card" style={{ background: 'linear-gradient(135deg, #059669, #10b981)', minHeight: 120 }}>
+        <div className="kpi-card" className='kpi-green' style={{ minHeight: 110 }}>
           <div className="kpi-icon"><Trophy size={24} /></div>
           <div className="kpi-label">Placements réussis</div>
           <div className="kpi-value">{stats.places}</div>
