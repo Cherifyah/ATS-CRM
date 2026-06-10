@@ -1,18 +1,21 @@
 import React, { useEffect, useState } from 'react'
-import { supabase } from '../lib/supabase'
-import { Phone, Calendar, TrendingUp, Trophy, Users, Briefcase, Building, Target, Check } from 'lucide-react'
+import { createClient } from '@supabase/supabase-js'
+import { Phone, Calendar, TrendingUp, Trophy, Users, Briefcase, Building, Target, Check, Clock } from 'lucide-react'
+
+const supabase = createClient(
+  'https://nlvffxqewztfpuvzqeih.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5sdmZmeHFld3p0ZnB1dnpxZWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5NDY5NTgsImV4cCI6MjA5NjUyMjk1OH0.6tED9Mw82dh5FKaEzeagSJSWxdBg1CsZJQou4TTTE8Q'
+)
 
 export default function Dashboard({ onNavigate }) {
   const [stats, setStats] = useState({
     totalCandidats: 0, enEntretien: 0, presentesClient: 0, places: 0, redFlags: 0,
     prospectsMonth: 0, rdvMonth: 0, clientsActifs: 0, missionsOuvertes: 0,
     adchases: 0, placementActif: 0, totalPushCV: 0, controles: 0,
-    entretiensWeek: 0
+    entretiensWeek: 0, timeToFill: null
   })
 
-  useEffect(() => {
-    loadStats()
-  }, [])
+  useEffect(() => { loadStats() }, [])
 
   async function loadStats() {
     const now = new Date()
@@ -25,7 +28,7 @@ export default function Dashboard({ onNavigate }) {
 
     const [cands, archives, prosp, clients, pushcv] = await Promise.all([
       supabase.from('candidats').select('statut, derniere_action, created_at'),
-      supabase.from('archives').select('type_archivage'),
+      supabase.from('archives').select('type_archivage, date_archivage, created_at'),
       supabase.from('prospection').select('resultat, date_contact'),
       supabase.from('clients').select('statut, missions_ouvertes'),
       supabase.from('push_cv').select('adchases, placement_actif, controles_reference, semaine').order('semaine', { ascending: false }).limit(1)
@@ -43,11 +46,20 @@ export default function Dashboard({ onNavigate }) {
       return d >= monday && d <= sunday
     }).length
 
+    const placesArr = a.filter(x => x.type_archivage === 'Place')
+    const timesToFill = placesArr
+      .filter(x => x.date_archivage && x.created_at)
+      .map(x => Math.round((new Date(x.date_archivage) - new Date(x.created_at)) / (1000 * 60 * 60 * 24)))
+      .filter(d => d > 0)
+    const timeToFill = timesToFill.length > 0
+      ? Math.round(timesToFill.reduce((s, d) => s + d, 0) / timesToFill.length)
+      : null
+
     setStats({
       totalCandidats: c.length,
       enEntretien: c.filter(x => x.statut === 'En entretien').length,
-      presentesClient: c.filter(x => x.statut === 'Présenté client').length,
-      places: a.filter(x => x.type_archivage === 'Placé').length,
+      presentesClient: c.filter(x => x.statut === 'Presente client').length,
+      places: a.filter(x => x.type_archivage === 'Place').length,
       redFlags: c.filter(x => x.statut === 'Red flag').length,
       prospectsMonth: p.filter(x => x.date_contact >= firstOfMonth).length,
       rdvMonth: p.filter(x => x.resultat === 'RDV obtenu' && x.date_contact >= firstOfMonth).length,
@@ -57,7 +69,8 @@ export default function Dashboard({ onNavigate }) {
       placementActif: pv[0]?.placement_actif || 0,
       totalPushCV: (pv[0]?.adchases || 0) + (pv[0]?.placement_actif || 0),
       controles: pv[0]?.controles_reference || 0,
-      entretiensWeek
+      entretiensWeek,
+      timeToFill
     })
   }
 
@@ -65,18 +78,20 @@ export default function Dashboard({ onNavigate }) {
   const pctEntretiens = Math.round((stats.entretiensWeek / objectif) * 100)
   const pctPush = Math.round((stats.totalPushCV / 150) * 100)
 
+  // Haut (Candidats) : violet, bleu, orange, vert — pas de doublon autorise en bas
   const kpiCandidats = [
     { label: 'Total candidats', value: stats.totalCandidats, cls: 'kpi-purple', icon: <Users size={24} /> },
     { label: 'En entretien', value: stats.enEntretien, cls: 'kpi-blue', icon: <Calendar size={24} /> },
-    { label: 'Présentés client', value: stats.presentesClient, cls: 'kpi-orange', icon: <Briefcase size={24} /> },
-    { label: 'Placés (total)', value: stats.places, cls: 'kpi-green', icon: <Trophy size={24} /> },
+    { label: 'Presentes client', value: stats.presentesClient, cls: 'kpi-orange', icon: <Briefcase size={24} /> },
+    { label: 'Places (total)', value: stats.places, cls: 'kpi-green', icon: <Trophy size={24} /> },
   ]
 
+  // Bas (Prospection) : rose, cyan, gris ardoise, rouge — aucun doublon
   const kpiProsp = [
-    { label: 'Prospects ce mois', value: stats.prospectsMonth, cls: 'kpi-purple', icon: <Phone size={24} />, badge: 'Objectif : 60' },
-    { label: 'RDV obtenus ce mois', value: stats.rdvMonth, cls: 'kpi-cyan', icon: <Calendar size={24} />, badge: `1 appel / ${stats.prospectsMonth > 0 ? Math.round(stats.prospectsMonth / Math.max(stats.rdvMonth,1)) : '—'} → RDV` },
-    { label: 'Clients actifs', value: stats.clientsActifs, cls: 'kpi-blue', icon: <Building size={24} /> },
-    { label: 'Missions ouvertes', value: stats.missionsOuvertes, cls: 'kpi-slate', icon: <Target size={24} /> },
+    { label: 'Prospects ce mois', value: stats.prospectsMonth, cls: 'kpi-pink', icon: <Phone size={24} />, badge: 'Objectif : 60' },
+    { label: 'RDV obtenus ce mois', value: stats.rdvMonth, cls: 'kpi-cyan', icon: <Calendar size={24} />, badge: `Taux : ${stats.prospectsMonth > 0 ? Math.round(stats.rdvMonth / Math.max(stats.prospectsMonth,1) * 100) : 0}%` },
+    { label: 'Clients actifs', value: stats.clientsActifs, cls: 'kpi-slate', icon: <Building size={24} /> },
+    { label: 'Missions ouvertes', value: stats.missionsOuvertes, cls: 'kpi-red', icon: <Target size={24} /> },
   ]
 
   return (
@@ -148,9 +163,31 @@ export default function Dashboard({ onNavigate }) {
           </div>
         </div>
         <div className="push-cv-card" style={{ background: '#f0f9ff', border: '1px solid #7dd3fc' }}>
-          <div className="push-cv-label" style={{ color: '#0c4a6e' }}>Contrôles de référence</div>
+          <div className="push-cv-label" style={{ color: '#0c4a6e' }}>Controles de reference</div>
           <div className="push-cv-value" style={{ color: '#0284c7' }}>{stats.controles}</div>
-          <div style={{ fontSize: 11, color: '#0c4a6e' }}>ce mois — indicateur indépendant</div>
+          <div style={{ fontSize: 11, color: '#0c4a6e' }}>ce mois</div>
+        </div>
+      </div>
+
+      <div className="section-title">Performance — Time-to-Fill</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+        <div className="kpi-card" style={{ background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', minHeight: 120 }}>
+          <div className="kpi-icon"><Clock size={24} /></div>
+          <div className="kpi-label">Time-to-Fill moyen</div>
+          <div className="kpi-value">{stats.timeToFill !== null ? `${stats.timeToFill}j` : '—'}</div>
+          <div className="kpi-badge">{stats.timeToFill !== null ? (stats.timeToFill <= 35 ? 'Dans l objectif' : 'Au-dessus de 35j') : 'Pas encore de placement'}</div>
+        </div>
+        <div className="kpi-card" style={{ background: 'linear-gradient(135deg, #0891b2, #0284c7)', minHeight: 120 }}>
+          <div className="kpi-icon"><TrendingUp size={24} /></div>
+          <div className="kpi-label">Objectif Time-to-Fill</div>
+          <div className="kpi-value">35j</div>
+          <div className="kpi-badge">Benchmark marche mid-market</div>
+        </div>
+        <div className="kpi-card" style={{ background: 'linear-gradient(135deg, #059669, #10b981)', minHeight: 120 }}>
+          <div className="kpi-icon"><Trophy size={24} /></div>
+          <div className="kpi-label">Placements reussis</div>
+          <div className="kpi-value">{stats.places}</div>
+          <div className="kpi-badge">Total depuis le debut</div>
         </div>
       </div>
     </div>
