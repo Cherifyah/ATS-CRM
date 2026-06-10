@@ -9,12 +9,26 @@ const supabase = createClient(
 
 const METIERS = ['Audit financier', 'Expertise comptable', 'Conseil', 'Juridique']
 const STATUTS = ['Identifie', 'En entretien', 'Presente client', 'En attente mission', 'Place', 'Red flag', 'Archive']
+const STATUT_LABELS = {
+  'Identifie': 'Identifie',
+  'En entretien': 'En entretien',
+  'Presente client': 'Presente client',
+  'En attente mission': 'En attente mission',
+  'Place': 'Place',
+  'Red flag': 'Red flag',
+  'Archive': 'Archive'
+}
 const SOURCES = ['LinkedIn', 'Candidature directe', 'Recommandation', 'Sourcing', 'Lemlist', 'Autre']
 const ANGLAIS = ['Courant', 'Professionnel', 'Intermediaire', 'Lu/ecrit', 'Notions', 'Non']
 
 const BADGE = {
-  'Identifie': 'badge-gray', 'En entretien': 'badge-purple', 'Presente client': 'badge-blue',
-  'En attente mission': 'badge-orange', 'Place': 'badge-green', 'Red flag': 'badge-red', 'Archive': 'badge-gray'
+  'Identifie': 'badge-gray',
+  'En entretien': 'badge-purple',
+  'Presente client': 'badge-blue',
+  'En attente mission': 'badge-orange',
+  'Place': 'badge-green',
+  'Red flag': 'badge-red',
+  'Archive': 'badge-gray'
 }
 
 function emptyForm() {
@@ -92,7 +106,7 @@ export default function Candidats() {
   }
 
   async function deleteCandidat(id) {
-    if (window.confirm('Supprimer ce candidat definitivement ?')) {
+    if (window.confirm('Supprimer ce candidat ?')) {
       await supabase.from('candidats').delete().eq('id', id)
       load()
     }
@@ -178,7 +192,7 @@ export default function Candidats() {
               <div className="form-group">
                 <label className="form-label">Statut</label>
                 <select className="form-select" value={form.statut} onChange={e => setForm({...form, statut: e.target.value})}>
-                  {STATUTS.map(s => <option key={s}>{s}</option>)}
+                  {STATUTS.map(s => <option key={s} value={s}>{STATUT_LABELS[s]}</option>)}
                 </select>
               </div>
               <div className="form-group">
