@@ -78,6 +78,12 @@ export default function Dashboard({ onNavigate }) {
   const pctEntretiens = Math.round((stats.entretiensWeek / objectif) * 100)
   const pctPush = Math.round((stats.totalPushCV / 150) * 100)
 
+  function goTo(page, filter) {
+    onNavigate(page, filter)
+  }
+
+  const kpiStyle = { cursor: 'pointer', transition: 'transform .15s, box-shadow .15s' }
+
   return (
     <div>
       <div className="page-header">
@@ -87,25 +93,37 @@ export default function Dashboard({ onNavigate }) {
 
       <div className="section-title">Candidats — Pipeline</div>
       <div className="kpi-grid">
-        <div className="kpi-card kpi-purple">
+        <div className="kpi-card kpi-purple" style={kpiStyle} onClick={() => goTo('candidats', null)}
+          onMouseEnter={e => e.currentTarget.style.transform='scale(1.02)'}
+          onMouseLeave={e => e.currentTarget.style.transform='scale(1)'}>
           <div className="kpi-icon"><Users size={24} /></div>
           <div className="kpi-label">Total candidats</div>
           <div className="kpi-value">{stats.totalCandidats}</div>
+          <div className="kpi-badge">Voir tous →</div>
         </div>
-        <div className="kpi-card kpi-blue">
+        <div className="kpi-card kpi-blue" style={kpiStyle} onClick={() => goTo('candidats', 'En entretien')}
+          onMouseEnter={e => e.currentTarget.style.transform='scale(1.02)'}
+          onMouseLeave={e => e.currentTarget.style.transform='scale(1)'}>
           <div className="kpi-icon"><Calendar size={24} /></div>
           <div className="kpi-label">En entretien</div>
           <div className="kpi-value">{stats.enEntretien}</div>
+          <div className="kpi-badge">Voir →</div>
         </div>
-        <div className="kpi-card kpi-orange">
+        <div className="kpi-card kpi-orange" style={kpiStyle} onClick={() => goTo('candidats', 'Presente client')}
+          onMouseEnter={e => e.currentTarget.style.transform='scale(1.02)'}
+          onMouseLeave={e => e.currentTarget.style.transform='scale(1)'}>
           <div className="kpi-icon"><Briefcase size={24} /></div>
           <div className="kpi-label">Présentés client</div>
           <div className="kpi-value">{stats.presentesClient}</div>
+          <div className="kpi-badge">Voir →</div>
         </div>
-        <div className="kpi-card kpi-green">
+        <div className="kpi-card kpi-green" style={kpiStyle} onClick={() => goTo('candidats', 'Place')}
+          onMouseEnter={e => e.currentTarget.style.transform='scale(1.02)'}
+          onMouseLeave={e => e.currentTarget.style.transform='scale(1)'}>
           <div className="kpi-icon"><Trophy size={24} /></div>
           <div className="kpi-label">Placés (total)</div>
           <div className="kpi-value">{stats.places}</div>
+          <div className="kpi-badge">Voir →</div>
         </div>
       </div>
 
@@ -128,27 +146,37 @@ export default function Dashboard({ onNavigate }) {
 
       <div className="section-title">Prospection commerciale</div>
       <div className="kpi-grid">
-        <div className="kpi-card kpi-pink">
+        <div className="kpi-card kpi-pink" style={kpiStyle} onClick={() => goTo('prospection', null)}
+          onMouseEnter={e => e.currentTarget.style.transform='scale(1.02)'}
+          onMouseLeave={e => e.currentTarget.style.transform='scale(1)'}>
           <div className="kpi-icon"><Phone size={24} /></div>
           <div className="kpi-label">Prospects ce mois</div>
           <div className="kpi-value">{stats.prospectsMonth}</div>
-          <div className="kpi-badge">Objectif : 60</div>
+          <div className="kpi-badge">Objectif : 60 →</div>
         </div>
-        <div className="kpi-card kpi-cyan">
+        <div className="kpi-card kpi-cyan" style={kpiStyle} onClick={() => goTo('prospection', 'RDV obtenu')}
+          onMouseEnter={e => e.currentTarget.style.transform='scale(1.02)'}
+          onMouseLeave={e => e.currentTarget.style.transform='scale(1)'}>
           <div className="kpi-icon"><Calendar size={24} /></div>
           <div className="kpi-label">RDV obtenus ce mois</div>
           <div className="kpi-value">{stats.rdvMonth}</div>
-          <div className="kpi-badge">Taux : {stats.prospectsMonth > 0 ? Math.round(stats.rdvMonth / stats.prospectsMonth * 100) : 0}%</div>
+          <div className="kpi-badge">Taux : {stats.prospectsMonth > 0 ? Math.round(stats.rdvMonth / stats.prospectsMonth * 100) : 0}% →</div>
         </div>
-        <div className="kpi-card kpi-slate">
+        <div className="kpi-card kpi-slate" style={kpiStyle} onClick={() => goTo('clients', 'Actif')}
+          onMouseEnter={e => e.currentTarget.style.transform='scale(1.02)'}
+          onMouseLeave={e => e.currentTarget.style.transform='scale(1)'}>
           <div className="kpi-icon"><Building size={24} /></div>
           <div className="kpi-label">Clients actifs</div>
           <div className="kpi-value">{stats.clientsActifs}</div>
+          <div className="kpi-badge">Voir →</div>
         </div>
-        <div className="kpi-card kpi-red">
+        <div className="kpi-card kpi-red" style={kpiStyle} onClick={() => goTo('clients', 'missions')}
+          onMouseEnter={e => e.currentTarget.style.transform='scale(1.02)'}
+          onMouseLeave={e => e.currentTarget.style.transform='scale(1)'}>
           <div className="kpi-icon"><Target size={24} /></div>
           <div className="kpi-label">Missions ouvertes</div>
           <div className="kpi-value">{stats.missionsOuvertes}</div>
+          <div className="kpi-badge">Voir →</div>
         </div>
       </div>
 
