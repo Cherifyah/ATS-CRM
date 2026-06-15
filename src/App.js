@@ -10,21 +10,27 @@ import './App.css'
 
 export default function App() {
   const [page, setPage] = useState('dashboard')
+  const [filter, setFilter] = useState(null)
+
+  function handleNavigate(newPage, newFilter) {
+    setFilter(newFilter || null)
+    setPage(newPage)
+  }
 
   const pages = {
-    dashboard: <Dashboard onNavigate={setPage} />,
-    candidats: <Candidats />,
+    dashboard: <Dashboard onNavigate={handleNavigate} />,
+    candidats: <Candidats filter={filter} />,
     prequal: <FichePrequal />,
-    clients: <CRMClients />,
-    prospection: <Prospection />,
+    clients: <CRMClients filter={filter} />,
+    prospection: <Prospection filter={filter} />,
     archives: <Archives />,
   }
 
   return (
     <div className="app-layout">
-      <Sidebar current={page} onNavigate={setPage} />
+      <Sidebar current={page} onNavigate={(p) => handleNavigate(p, null)} />
       <main className="main-content">
-        {pages[page] || <Dashboard onNavigate={setPage} />}
+        {pages[page] || <Dashboard onNavigate={handleNavigate} />}
       </main>
     </div>
   )
