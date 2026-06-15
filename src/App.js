@@ -17,20 +17,35 @@ export default function App() {
     setPage(newPage)
   }
 
-  const pages = {
-    dashboard: <Dashboard onNavigate={handleNavigate} />,
-    candidats: <Candidats filter={filter} />,
-    prequal: <FichePrequal />,
-    clients: <CRMClients filter={filter} />,
-    prospection: <Prospection filter={filter} />,
-    archives: <Archives />,
+  function handleSidebarNav(newPage) {
+    setFilter(null)
+    setPage(newPage)
+  }
+
+  const renderPage = () => {
+    switch(page) {
+      case 'dashboard':
+        return <Dashboard key="dashboard" onNavigate={handleNavigate} />
+      case 'candidats':
+        return <Candidats key={`candidats-${filter}`} filter={filter} />
+      case 'prequal':
+        return <FichePrequal key="prequal" />
+      case 'clients':
+        return <CRMClients key={`clients-${filter}`} filter={filter} />
+      case 'prospection':
+        return <Prospection key={`prospection-${filter}`} filter={filter} />
+      case 'archives':
+        return <Archives key="archives" />
+      default:
+        return <Dashboard key="dashboard" onNavigate={handleNavigate} />
+    }
   }
 
   return (
     <div className="app-layout">
-      <Sidebar current={page} onNavigate={(p) => handleNavigate(p, null)} />
+      <Sidebar current={page} onNavigate={handleSidebarNav} />
       <main className="main-content">
-        {pages[page] || <Dashboard onNavigate={handleNavigate} />}
+        {renderPage()}
       </main>
     </div>
   )
