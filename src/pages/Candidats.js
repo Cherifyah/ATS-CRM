@@ -10,17 +10,11 @@ const supabase = createClient(
 const METIERS = ['Audit financier', 'Expertise comptable', 'Conseil', 'Juridique']
 const STATUTS = ['Identifie', 'En entretien', 'Presente client', 'En attente mission', 'Place', 'Red flag', 'Archive']
 const STATUT_DISPLAY = {
-  'Identifie': 'Identifié',
-  'En entretien': 'En entretien',
-  'Presente client': 'Présenté client',
-  'En attente mission': 'En attente mission',
-  'Place': 'Placé',
-  'Red flag': 'Red flag',
-  'Archive': 'Archivé'
+  'Identifie': 'Identifié', 'En entretien': 'En entretien', 'Presente client': 'Présenté client',
+  'En attente mission': 'En attente mission', 'Place': 'Placé', 'Red flag': 'Red flag', 'Archive': 'Archivé'
 }
 const SOURCES = ['LinkedIn', 'Candidature directe', 'Recommandation', 'Sourcing', 'Lemlist', 'Autre']
 const ANGLAIS = ['Courant', 'Professionnel', 'Intermédiaire', 'Lu/écrit', 'Notions', 'Non']
-
 const BADGE = {
   'Identifie': 'badge-gray', 'En entretien': 'badge-purple', 'Presente client': 'badge-blue',
   'En attente mission': 'badge-orange', 'Place': 'badge-green', 'Red flag': 'badge-red', 'Archive': 'badge-gray'
@@ -30,8 +24,9 @@ function emptyForm() {
   return { nom: '', metier: 'Audit financier', poste_vise: '', niveau: '', structure_actuelle: '', statut: 'Identifie', source: 'LinkedIn', anglais: 'Courant', autres_langues: '', rem_actuelle: '', rem_cible: '', disponibilite: '', notes: '' }
 }
 
-export default function Candidats() {
+export default function Candidats({ filter }) {
   const [candidats, setCandidats] = useState([])
+  const [activeFilter, setActiveFilter] = useState(filter || null)
   const [showModal, setShowModal] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [form, setForm] = useState(emptyForm())
@@ -39,6 +34,7 @@ export default function Candidats() {
   const [msg, setMsg] = useState(null)
 
   useEffect(() => { load() }, [])
+  useEffect(() => { setActiveFilter(filter || null) }, [filter])
 
   async function load() {
     const { data } = await supabase.from('candidats').select('*').order('created_at', { ascending: false })
@@ -79,11 +75,31 @@ export default function Candidats() {
     if (window.confirm('Supprimer ce candidat ?')) { await supabase.from('candidats').delete().eq('id', id); load() }
   }
 
+  const displayed = activeFilter ? candidats.filter(c => c.statut === activeFilter) : candidats
+
   return (
     <div>
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div><div className="page-title">Candidats</div><div className="page-sub">{candidats.length} candidats actifs</div></div>
-        <button className="btn btn-primary" onClick={openNew}><Plus size={15} /> Nouveau candidat</button>
+        <div>
+          <div className="page-title">Candidats</div>
+          <div className="page-sub">{displayed.length} candidat{displayed.length > 1 ? 's' : ''}{activeFilter ? ` — filtre : ${STATUT_DISPLAY[activeFilter] || activeFilter}` : ''}</div>
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {activeFilter && (
+            <button className="btn btn-secondary" onClick={() => setActiveFilter(null)}>✕ Retirer le filtre</button>
+          )}
+          <button className="btn btn-primary" onClick={openNew}><Plus size={15} /> Nouveau candidat</button>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
+        {[null, 'Identifie', 'En entretien', 'Presente client', 'En attente mission', 'Place', 'Red flag'].map(s => (
+          <button key={s || 'tous'} onClick={() => setActiveFilter(s)}
+            style={{ padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 500, cursor: 'pointer', border: 'none',
+              background: activeFilter === s ? '#6d5ce7' : '#f3f4f6', color: activeFilter === s ? '#fff' : '#374151' }}>
+            {s ? STATUT_DISPLAY[s] : 'Tous'}
+          </button>
+        ))}
       </div>
 
       {msg && <div className="alert alert-success">{msg}</div>}
@@ -92,8 +108,8 @@ export default function Candidats() {
         <table className="data-table">
           <thead><tr><th>Candidat</th><th>Métier</th><th>Statut</th><th>Anglais</th><th>Autre langue</th><th>Rém. actuelle</th><th>Dispo</th><th>Actions</th></tr></thead>
           <tbody>
-            {candidats.length === 0 && <tr><td colSpan={8} style={{ textAlign: 'center', color: '#9ca3af', padding: 24 }}>Aucun candidat</td></tr>}
-            {candidats.map(c => (
+            {displayed.length === 0 && <tr><td colSpan={8} style={{ textAlign: 'center', color: '#9ca3af', padding: 24 }}>Aucun candidat</td></tr>}
+            {displayed.map(c => (
               <tr key={c.id}>
                 <td><div style={{ fontWeight: 600 }}>{c.nom}</div><div style={{ fontSize: 11, color: '#6b7280' }}>{c.poste_vise}</div></td>
                 <td><span className="tag tag-purple">{c.metier}</span></td>
@@ -129,12 +145,7 @@ export default function Candidats() {
               <div className="form-group"><label className="form-label">Poste visé</label><input className="form-input" value={form.poste_vise} onChange={e => setForm({...form, poste_vise: e.target.value})} /></div>
               <div className="form-group"><label className="form-label">Niveau</label><input className="form-input" value={form.niveau} onChange={e => setForm({...form, niveau: e.target.value})} placeholder="Senior, Manager..." /></div>
               <div className="form-group"><label className="form-label">Structure actuelle</label><input className="form-input" value={form.structure_actuelle} onChange={e => setForm({...form, structure_actuelle: e.target.value})} /></div>
-              <div className="form-group">
-                <label className="form-label">Statut</label>
-                <select className="form-select" value={form.statut} onChange={e => setForm({...form, statut: e.target.value})}>
-                  {STATUTS.map(s => <option key={s} value={s}>{STATUT_DISPLAY[s]}</option>)}
-                </select>
-              </div>
+              <div className="form-group"><label className="form-label">Statut</label><select className="form-select" value={form.statut} onChange={e => setForm({...form, statut: e.target.value})}>{STATUTS.map(s => <option key={s} value={s}>{STATUT_DISPLAY[s]}</option>)}</select></div>
               <div className="form-group"><label className="form-label">Source</label><select className="form-select" value={form.source} onChange={e => setForm({...form, source: e.target.value})}>{SOURCES.map(s => <option key={s}>{s}</option>)}</select></div>
               <div className="form-group"><label className="form-label">Anglais</label><select className="form-select" value={form.anglais} onChange={e => setForm({...form, anglais: e.target.value})}>{ANGLAIS.map(a => <option key={a}>{a}</option>)}</select></div>
               <div className="form-group"><label className="form-label">Autre(s) langue(s)</label><input className="form-input" value={form.autres_langues} onChange={e => setForm({...form, autres_langues: e.target.value})} placeholder="Ex: Arabe, Espagnol B2..." /></div>
