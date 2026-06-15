@@ -15,8 +15,9 @@ function emptyForm() {
   return { nom_cabinet: '', type: 'Audit', taille: '', ville: '', contact: '', fonction: '', email: '', telephone: '', statut: 'Actif', missions_ouvertes: 0, missions_closes: 0, notes: '' }
 }
 
-export default function CRMClients() {
+export default function CRMClients({ filter }) {
   const [clients, setClients] = useState([])
+  const [activeFilter, setActiveFilter] = useState(filter || null)
   const [showModal, setShowModal] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [form, setForm] = useState(emptyForm())
@@ -24,6 +25,7 @@ export default function CRMClients() {
   const [msg, setMsg] = useState(null)
 
   useEffect(() => { load() }, [])
+  useEffect(() => { setActiveFilter(filter || null) }, [filter])
 
   async function load() {
     const { data } = await supabase.from('clients').select('*').order('created_at', { ascending: false })
@@ -35,11 +37,10 @@ export default function CRMClients() {
   function openEdit(c) {
     setEditingId(c.id)
     setForm({
-      nom_cabinet: c.nom_cabinet || '', type: c.type || 'Audit', taille: c.taille || '',
-      ville: c.ville || '', contact: c.contact || '', fonction: c.fonction || '',
-      email: c.email || '', telephone: c.telephone || '', statut: c.statut || 'Actif',
-      missions_ouvertes: c.missions_ouvertes || 0, missions_closes: c.missions_closes || 0,
-      notes: c.notes || ''
+      nom_cabinet: c.nom_cabinet||'', type: c.type||'Audit', taille: c.taille||'',
+      ville: c.ville||'', contact: c.contact||'', fonction: c.fonction||'',
+      email: c.email||'', telephone: c.telephone||'', statut: c.statut||'Actif',
+      missions_ouvertes: c.missions_ouvertes||0, missions_closes: c.missions_closes||0, notes: c.notes||''
     })
     setShowModal(true)
   }
@@ -62,10 +63,16 @@ export default function CRMClients() {
     if (window.confirm('Supprimer ce client ?')) { await supabase.from('clients').delete().eq('id', id); load() }
   }
 
+  // Filtrage
+  const displayed = activeFilter === 'Actif'
+    ? clients.filter(c => c.statut === 'Actif')
+    : activeFilter === 'missions'
+    ? clients.filter(c => (c.missions_ouvertes || 0) > 0)
+    : clients
+
   const actifs = clients.filter(c => c.statut === 'Actif').length
   const missions = clients.reduce((s, c) => s + (c.missions_ouvertes || 0), 0)
   const placesCount = clients.reduce((s, c) => s + (c.missions_closes || 0), 0)
-  const rdvEstim = Math.round(clients.length * 0.25)
   const mandatsEstim = clients.filter(c => (c.missions_ouvertes || 0) + (c.missions_closes || 0) > 0).length
 
   return (
@@ -73,9 +80,32 @@ export default function CRMClients() {
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <div className="page-title">CRM Clients</div>
-          <div className="page-sub">{clients.length} cabinets dans la base</div>
+          <div className="page-sub">
+            {displayed.length} cabinet{displayed.length > 1 ? 's' : ''}
+            {activeFilter === 'Actif' && ' — filtre : Clients actifs'}
+            {activeFilter === 'missions' && ' — filtre : Avec missions ouvertes'}
+          </div>
         </div>
-        <button className="btn btn-primary" onClick={openNew}><Plus size={15} /> Nouveau client</button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {activeFilter && <button className="btn btn-secondary" onClick={() => setActiveFilter(null)}>✕ Retirer le filtre</button>}
+          <button className="btn btn-primary" onClick={openNew}><Plus size={15} /> Nouveau client</button>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
+        {[
+          { key: null, label: 'Tous' },
+          { key: 'Actif', label: 'Actifs' },
+          { key: 'missions', label: 'Avec missions ouvertes' },
+          { key: 'En négociation', label: 'En négociation' },
+          { key: 'Fidélisé', label: 'Fidélisés' },
+        ].map(f => (
+          <button key={f.key || 'tous'} onClick={() => setActiveFilter(f.key)}
+            style={{ padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 500, cursor: 'pointer', border: 'none',
+              background: activeFilter === f.key ? '#6d5ce7' : '#f3f4f6', color: activeFilter === f.key ? '#fff' : '#374151' }}>
+            {f.label}
+          </button>
+        ))}
       </div>
 
       {msg && <div className="alert alert-success">{msg}</div>}
@@ -89,10 +119,9 @@ export default function CRMClients() {
 
       <div className="section-title">Entonnoir commercial</div>
       <div className="card" style={{ marginBottom: 16 }}>
-        <div style={{ fontSize: 11, color: '#6b7280', marginBottom: 10 }}>Conversion à chaque étape — basé sur vos données réelles</div>
         {[
           { label: 'Prospects contactés', n: clients.length, pct: 100, color: '#6d5ce7' },
-          { label: 'RDV obtenus', n: rdvEstim, pct: clients.length > 0 ? Math.round(rdvEstim / clients.length * 100) : 0, color: '#2e86de' },
+          { label: 'RDV obtenus', n: Math.round(clients.length * 0.25), pct: 25, color: '#2e86de' },
           { label: 'Mandats signés', n: mandatsEstim, pct: clients.length > 0 ? Math.round(mandatsEstim / clients.length * 100) : 0, color: '#0abde3' },
           { label: 'Placements réalisés', n: placesCount, pct: clients.length > 0 ? Math.round(placesCount / clients.length * 100) : 0, color: '#1fbc7a' },
         ].map(row => (
@@ -106,9 +135,6 @@ export default function CRMClients() {
             <div className="funnel-pct">{row.pct}%</div>
           </div>
         ))}
-        <div style={{ fontSize: 10, color: '#9ca3af', marginTop: 8, fontStyle: 'italic' }}>
-          "Placements réalisés" = total des missions closes renseignées dans vos fiches clients
-        </div>
       </div>
 
       <div className="card" style={{ padding: 0 }}>
@@ -117,19 +143,11 @@ export default function CRMClients() {
             <tr><th>Cabinet</th><th>Contact</th><th>Statut</th><th>Missions ouvertes</th><th>Missions closes</th><th>Dernière interaction</th><th>Notes</th><th>Actions</th></tr>
           </thead>
           <tbody>
-            {clients.length === 0 && (
-              <tr><td colSpan={8} style={{ textAlign: 'center', color: '#9ca3af', padding: 24 }}>Aucun client</td></tr>
-            )}
-            {clients.map(c => (
-              <tr key={c.id}>
-                <td>
-                  <div style={{ fontWeight: 600 }}>{c.nom_cabinet}</div>
-                  <div style={{ fontSize: 11, color: '#6b7280' }}>{c.type} · {c.taille ? `${c.taille} pers.` : ''} · {c.ville}</div>
-                </td>
-                <td>
-                  <div style={{ fontSize: 12 }}>{c.contact}</div>
-                  <div style={{ fontSize: 11, color: '#6b7280' }}>{c.fonction}</div>
-                </td>
+            {displayed.length === 0 && <tr><td colSpan={8} style={{ textAlign: 'center', color: '#9ca3af', padding: 24 }}>Aucun client</td></tr>}
+            {displayed.map(c => (
+              <tr key={c.id} style={{ background: activeFilter === 'missions' && (c.missions_ouvertes || 0) > 0 ? '#f0f9ff' : 'inherit' }}>
+                <td><div style={{ fontWeight: 600 }}>{c.nom_cabinet}</div><div style={{ fontSize: 11, color: '#6b7280' }}>{c.type} · {c.taille ? `${c.taille} pers.` : ''} · {c.ville}</div></td>
+                <td><div style={{ fontSize: 12 }}>{c.contact}</div><div style={{ fontSize: 11, color: '#6b7280' }}>{c.fonction}</div></td>
                 <td><span className={`badge ${BADGE[c.statut] || 'badge-gray'}`}>{c.statut}</span></td>
                 <td style={{ fontSize: 13, fontWeight: 600, color: '#2e86de' }}>{c.missions_ouvertes || 0}</td>
                 <td style={{ fontSize: 13, fontWeight: 600, color: '#1fbc7a' }}>{c.missions_closes || 0}</td>
